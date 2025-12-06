@@ -3,40 +3,63 @@
 
 void Player::HandleMovement()
 {
+    if(IsKeyPressed(KEY_UP)) 
+        Jump();
+    if(IsKeyPressed(KEY_LEFT_SHIFT)) 
+        Dash();
+    
     if (isDashing) return;
+
+    if (!isTouchingGround && momentumDuration > 0 && dashMomentum != 0) {
+        float momentumMultiplier = (float)momentumTimer / 40.0f;
+        if (momentumMultiplier < 0) momentumMultiplier = 0;
+        
+        posX += dashMomentum * momentumMultiplier;
+    }
 
     if ((IsKeyUp(KEY_RIGHT) && IsKeyUp(KEY_LEFT)) ||
         (IsKeyDown(KEY_RIGHT) && IsKeyDown(KEY_LEFT)))
     {
-        if (isTouchingGround)
-        {
+        if (isTouchingGround) {
             isMoving = false;
-            speedX = 0;
         }
         return;
     }
 
     if (IsKeyDown(KEY_RIGHT)) {
-        posX += 5 + speedX;
+        posX += 5;
+        if (isDashing) posX -= 10;
         direction = 1;
         isMoving = true;
     }
-    if (speedX > 0)
-        speedX--;
-    else
-        speedX++;
-    if (IsKeyDown(KEY_LEFT)) {
-        posX -= 5 - speedX;
+    else if (IsKeyDown(KEY_LEFT)) {
+        posX -= 5;
         direction = 0;
         isMoving = true;
     }
 }
-
-
 void Player::HandleDash()
 {
     if (isDashing) {
-        posX += speedX;
+        float targetMomentum = dashSpeed * (direction == 1 ? 1 : -1);
+        float accel = 2.5f;
+        
+        if (direction == 1 && dashMomentum < targetMomentum) {
+            dashMomentum += accel;
+            if (dashMomentum > targetMomentum) dashMomentum = targetMomentum;
+        } else if (direction == 0 && dashMomentum > targetMomentum) {
+            dashMomentum -= accel;
+            if (dashMomentum < targetMomentum) dashMomentum = targetMomentum;
+        }
+        
+        posX += dashMomentum;
+        speedY = 0;
+        
+        if (momentumTimer > 0) {
+            momentumTimer--;
+        }
+        momentumDuration--;
+        
         dashTimer--;
         if (dashTimer <= 0) {
             isDashing = false;
@@ -44,21 +67,7 @@ void Player::HandleDash()
     }
 }
 
-
-
 void Player::HandleGravity()
 {
-    speedY += gravity;
-    posY += speedY;
-
-    if (posY >= W_HEIGHT - 172)
-    {
-        posY = W_HEIGHT - 172;
-        speedY = 0;
-        isTouchingGround = true;
-    }
-    else
-    {
-        isTouchingGround = false;
-    }
+    // Non utilisée
 }

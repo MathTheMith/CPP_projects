@@ -14,21 +14,15 @@ int main(void)
     SetTargetFPS(60);
     while(!WindowShouldClose())
     {
-        if(IsKeyPressed(KEY_UP)) 
-            madeline->Jump();
-        if(IsKeyPressed(KEY_LEFT_SHIFT)) 
-            madeline->Dash();
-
-        madeline->Update(map);
-
         BeginDrawing();
         ClearBackground(BLACK);
-
+        
+        madeline->Update(map);
         map->Draw();
+        madeline->Draw();
 
         DrawRectangle(0, W_HEIGHT - 100, W_WIDTH, 100, GRAY);
 
-        madeline->Draw();
 
         EndDrawing();
     }

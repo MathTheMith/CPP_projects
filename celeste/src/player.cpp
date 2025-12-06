@@ -9,8 +9,8 @@ Player::Player()
       jumpForce(-8),
       isDashing(false),
       dashTimer(0),
-      dashDuration(8),
-      dashSpeed(20),
+      dashDuration(10),
+      dashSpeed(14),
       nbDash(1),
       spriteSheetR(LoadTexture("images/spritesheet.png")),
       spriteSheetL(LoadTexture("images/spritesheet_reverse.png")),
@@ -24,8 +24,9 @@ Player::Player()
       frameTimer(0),
       isMoving(false),
       isTouchingGround(true),
-      posX(0),
-      posY(0)
+      dashMomentum(0),
+      momentumTimer(0),
+      momentumDuration(40)
 {}
 
 Player::~Player() {
@@ -57,42 +58,35 @@ bool Player::checkCollisionAt(Map *map, float x, float y)
             }
         }
     }
-
     return false;
 }
 
 bool Player::isOnGround(Map *map)
 {
-
     int feetY = (int)(posY + 72) / map->tileSize;
-    
     int leftX  = (int)posX / map->tileSize;
     int rightX = (int)(posX + 55) / map->tileSize;
 
     if (map->map[feetY][leftX] == '#')
-            return true;
+        return true;
     if (map->map[feetY][rightX] == '#')
-            return true;
-      
+        return true;
 
     return false;
 }
 
-void Player::Update(Map *map)
+void Player::checkCollision(Map *map, int oldX, int oldY)
 {
-    float oldX = posX;
-    float oldY = posY;
-    HandleDash();
-    HandleMovement();
-
     if (checkCollisionAt(map, posX, oldY)) {
         posX = oldX;
+        dashMomentum = 0;
         if (isDashing) {
             isDashing = false;
             speedX = 0;
         }
     }
 
+    // Toujours appliquer la gravité (sauf si on vient de dasher)
     speedY += gravity;
     posY += speedY;
 
@@ -101,7 +95,8 @@ void Player::Update(Map *map)
             posY = oldY;
             speedY = 0;
             isTouchingGround = true;
-            nbDash = 1;
+            if (!isDashing)
+                nbDash = 1;
         }
         else if (speedY < 0) {
             posY = oldY;
@@ -110,11 +105,37 @@ void Player::Update(Map *map)
     } else {
         isTouchingGround = false;
     }
+    
     if (posY >= W_HEIGHT - 172) {
         posY = W_HEIGHT - 172;
         speedY = 0;
         isTouchingGround = true;
-        nbDash = 1;
+        if (!isDashing)
+            nbDash = 1;
+    }
+}
+
+void Player::Update(Map *map)
+{
+    float oldX = posX;
+    float oldY = posY;
+    
+    HandleDash();
+    HandleMovement();
+    checkCollision(map, oldX, oldY);
+
+    // Décrémenter les timers SEULEMENT AU SOL
+    if (!isDashing && isTouchingGround) {
+        if (momentumTimer > 0) {
+            momentumTimer--;
+        }
+        if (momentumDuration > 0) {
+            momentumDuration--;
+            if (momentumDuration <= 0) {
+                dashMomentum = 0;
+                momentumTimer = 0;
+            }
+        }
     }
 
     frameTimer += GetFrameTime();
@@ -123,6 +144,7 @@ void Player::Update(Map *map)
         if (currentFrame >= frameCount) currentFrame = 0;
         frameTimer = 0;
     }
+    
     if (isOnGround(map))
         isTouchingGround = 1;
 }
@@ -132,9 +154,12 @@ void Player::Jump()
     if (isTouchingGround) {
         speedY = jumpForce;
         isTouchingGround = false;
+        
+        if (isDashing) {
+            isDashing = false;
+        }
     }
 }
-
 void Player::Dash()
 {
     if (isDashing || nbDash == 0)
@@ -142,6 +167,11 @@ void Player::Dash()
     isDashing = true;
     dashTimer = dashDuration;
     speedX = (direction == 1 ? dashSpeed : -dashSpeed);
+    dashMomentum = 0;
+    
+    momentumTimer = 40;  // CHANGÉ : commence à 40
+    momentumDuration = 40;
+    
     speedY = 0;
-    nbDash--;
+    nbDash = 0;
 }

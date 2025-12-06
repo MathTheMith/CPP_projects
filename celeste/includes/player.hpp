@@ -33,9 +33,11 @@ private:
     int frameCount;
     float frameTime;
     float frameTimer;
-
     bool isMoving;
     bool isTouchingGround;
+    float dashMomentum;
+    int momentumTimer;
+    int momentumDuration;
 
 public:
     Player();
@@ -52,6 +54,7 @@ public:
     void HandleGravity();
     void HandleMovement();
     bool isOnGround(Map *map);
+    void checkCollision(Map *map, int oldX, int oldY);
     bool checkCollisionAt(Map *map, float x, float y);
 };
 
