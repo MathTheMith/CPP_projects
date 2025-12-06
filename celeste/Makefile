@@ -11,7 +11,8 @@ RAYLIB_DIR = raylib
 SRC      = main.cpp \
 		   animation.cpp \
            player.cpp \
-		   map.cpp
+		   map.cpp \
+		   handle.cpp
 
 OBJ      = $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 

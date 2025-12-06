@@ -5,20 +5,17 @@ void Player::Draw()
 {
     int displayFrame;
 
-    // idle si immobile
     if(!isMoving) {
         displayFrame = 100;
     } else {
         displayFrame = currentFrame;
-        if(displayFrame == 1) displayFrame = 2; // skip idle
+        if(displayFrame == 1) displayFrame = 2;
     }
 
-    // Variables de frame
     int x = 0;
     int w = 15;
     int h = 18;
 
-    // Frames pour la direction droite
     if(direction == 1) {
         switch(displayFrame) {
             case 100:  x = 0;   w = 15; break;
@@ -55,12 +52,12 @@ void Player::Draw()
     }
     Rectangle sourceRec;
     sourceRec = { (float)x, 0, (float)w, (float)h };
-    Rectangle destRec = { (float)(posX - 2), (float)posY, w * 4, h * 4 };
+    Rectangle destRec = { (float)(posX - 2), (float)posY, (float)w * 4, (float)h * 4 };
 
 
     Texture2D tex = (direction == 1) ? spriteSheetR : spriteSheetL;
-	if (isDashing)
-		tex = spriteSheetD;
+	if (nbDash == 0)
+		tex = (direction == 1) ? spriteSheetDR : spriteSheetDL;
 
     DrawTexturePro(tex, sourceRec, destRec, (Vector2){0,0}, 0.0f, WHITE);
 }

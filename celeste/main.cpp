@@ -7,34 +7,33 @@ int main(void)
     SetTraceLogLevel(LOG_NONE);
     
     InitWindow(W_WIDTH, W_HEIGHT, "Celeste Like");
-    Map *world;
-    world = new Map("map/map.txt", 32);
-    Player madeline;
-    
+    Map *map;
+    map = new Map("map/map.txt", 32);
+    Player *madeline = new Player();
+    map->spawnPlayer(*madeline);
     SetTargetFPS(60);
-    
     while(!WindowShouldClose())
     {
         if(IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_SPACE)) 
-            madeline.Jump();
+            madeline->Jump();
         if(IsKeyPressed(KEY_LEFT_SHIFT)) 
-            madeline.Dash();
+            madeline->Dash();
 
-        madeline.Update();
+        madeline->Update(map);
 
         BeginDrawing();
         ClearBackground(BLACK);
 
-        world->Draw(madeline);
+        map->Draw();
 
         DrawRectangle(0, W_HEIGHT - 100, W_WIDTH, 100, GRAY);
 
-        madeline.Draw();
+        madeline->Draw();
 
         EndDrawing();
     }
 
-    delete world;
+    delete map; 
     CloseWindow();
     return 0;
 }
