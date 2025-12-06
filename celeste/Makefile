@@ -8,11 +8,11 @@ SRC_DIR  = .
 OBJ_DIR  = obj
 RAYLIB_DIR = raylib
 
-SRC      = main.cpp \
-		   animation.cpp \
-           player.cpp \
-		   map.cpp \
-		   handle.cpp
+SRC      = src/main.cpp \
+		   src/animation.cpp \
+           src/player.cpp \
+		   src/map.cpp \
+		   src/handle.cpp
 
 OBJ      = $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
@@ -24,7 +24,7 @@ all: raylib $(TARGET)
 
 # Compilation des .o dans le dossier obj/
 $(OBJ_DIR)/%.o: %.cpp
-	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(dir $@)
 	@echo "🔨 Compiling $<..."
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
