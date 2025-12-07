@@ -36,7 +36,7 @@ void Map::spawnPlayer(Player &player) const
             if (map[y][x] == 'P' && !playerSpawned)
             {
                 player.posX = x * tileSize;
-                player.posY = y * tileSize;
+                player.posY = (y - 1) * tileSize;
                 playerSpawned = true;
             }
         }

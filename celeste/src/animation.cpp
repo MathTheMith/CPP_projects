@@ -5,7 +5,7 @@ void Player::Draw()
 {
     int displayFrame;
 
-    if(!isMoving && !isDashing) {
+    if((!isMoving && !isDashing )|| (!isTouchingGround && !isDashing)) {
         displayFrame = 100;
     } else {
         displayFrame = currentFrame;
@@ -50,14 +50,51 @@ void Player::Draw()
             case 12: x = 0;   w = 15; break;
         }
     }
-    Rectangle sourceRec;
-    sourceRec = { (float)x, 0, (float)w, (float)h };
+    Rectangle sourceRec = { (float)x, 0, (float)w, (float)h };
     Rectangle destRec = { (float)(posX - 2), (float)posY, (float)w * 4, (float)h * 4 };
+    Texture2D tex;
 
+    if (isOnAWall)
+    {
+        if (nbDash)
+            tex = (direction == 1) ? spriteSheetWR : spriteSheetWL;
+        else
+            tex = (direction == 1) ? spriteSheetWDR : spriteSheetWDL;
 
-    Texture2D tex = (direction == 1) ? spriteSheetR : spriteSheetL;
-	if (nbDash == 0)
-		tex = (direction == 1) ? spriteSheetDR : spriteSheetDL;
+        sourceRec = {0,0,10,16};
+        x = (direction == 1) ? 18 : -2;
+        destRec = { (float)(posX + x), (float)posY, 10*4, 16*4 };
+    }
+    else if (!isTouchingGround && nbDash == 0)
+    {
+        tex = (direction == 1) ? spriteSheetDR : spriteSheetDL;
+
+            displayFrame = 6;
+
+            if (direction == 1) {x = 82; w = 15;} 
+            else { x = 103;w = 15;}
+
+            sourceRec = { (float)x, 0, (float)w, (float)h };
+            destRec   = { (float)posX, (float)posY, (float)w * 4, (float)h * 4 };
+    }
+    else if (!isTouchingGround)
+    {
+        bool altJump = ((frameCounter / 8) % 2) == 0;
+        tex = (direction == 1) ? (altJump ? spriteSheetJR1 : spriteSheetJR2)
+                                : (altJump ? spriteSheetJL1 : spriteSheetJL2);
+
+        sourceRec = {0,0,14,18};
+        destRec = { (float)posX, (float)posY, 14*4, 18*4 };
+    }
+    else if (nbDash == 0)
+    {
+        tex = (direction == 1) ? spriteSheetDR : spriteSheetDL;
+    }
+    else
+    {
+        tex = (direction == 1) ? spriteSheetR : spriteSheetL;
+    }
+
 
     DrawTexturePro(tex, sourceRec, destRec, (Vector2){0,0}, 0.0f, WHITE);
 }

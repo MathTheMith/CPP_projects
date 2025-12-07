@@ -16,6 +16,14 @@ Player::Player()
       spriteSheetL(LoadTexture("images/spritesheet_reverse.png")),
       spriteSheetDR(LoadTexture("images/spritesheet_dash.png")),
       spriteSheetDL(LoadTexture("images/spritesheet_dash_reverse.png")),
+      spriteSheetWR(LoadTexture("images/celeste_climb.png")),
+      spriteSheetWL(LoadTexture("images/celeste_climb_reverse.png")),
+      spriteSheetWDR(LoadTexture("images/celeste_climb_dash.png")),
+      spriteSheetWDL(LoadTexture("images/celeste_climb_dash_reverse.png")),
+      spriteSheetJL1(LoadTexture("images/celeste_jumpL1.png")),
+      spriteSheetJL2(LoadTexture("images/celeste_jumpL2.png")),
+      spriteSheetJR1(LoadTexture("images/celeste_jumpR1.png")),
+      spriteSheetJR2(LoadTexture("images/celeste_jumpR2.png")),
       frameWidth(17),
       frameHeight(18),
       currentFrame(0),
@@ -24,9 +32,9 @@ Player::Player()
       frameTimer(0),
       isMoving(false),
       isTouchingGround(true),
-      dashMomentum(0),
-      momentumTimer(0),
-      momentumDuration(40)
+      isOnAWall(0),
+      posX(0),
+      posY(0)
 {}
 
 Player::~Player() {
@@ -38,13 +46,16 @@ Player::~Player() {
 
 bool Player::checkCollisionAt(Map *map, float x, float y)
 {
-    int w = 50;
+    int w = 45;
     int h = 72;
 
-    int minTileX = (int)(x + 5)/ map->tileSize;
-    int maxTileX = (int)(x + w - 1) / map->tileSize;
+    int minTileX = (int)(x + 10) / map->tileSize;
+    int maxTileX = (int)(x + w) / map->tileSize;
     int minTileY = (int)y / map->tileSize;
-    int maxTileY = (int)(y + h - 1) / map->tileSize;
+    int maxTileY = (int)(y + h) / map->tileSize;
+
+    if (showHitbox)
+        DrawRectangle((int)(x + 5), (int)y, w, h, GRAY);
 
     for (int ty = minTileY; ty <= maxTileY; ty++) {
         for (int tx = minTileX; tx <= maxTileX; tx++) {
@@ -60,33 +71,86 @@ bool Player::checkCollisionAt(Map *map, float x, float y)
     }
     return false;
 }
+bool Player::isTouchingRightWall(Map* map)
+{
+    int w = 60;
+    int h = 60;
+
+    int rightX = (int)(posX + w);
+    int topY   = (int)(posY + 25);
+    int botY   = (int)(posY + h - 1);
+
+    if (showHitbox)
+        DrawLine(rightX, topY, rightX, botY, BLUE);
+
+    int tileX = rightX / map->tileSize;
+
+    for (int ty = topY / map->tileSize; ty <= botY / map->tileSize; ty++) {
+        if (map->map[ty][tileX] == '#' && direction == 1)
+            return true;
+    }
+    return false;
+}
+
+
+bool Player::isTouchingLeftWall(Map* map)
+{
+    int h = 60;
+    int leftX = (int)(posX - 10);
+    int topY  = (int)(posY + 25);
+    int botY  = (int)(posY + h + 1);
+
+    if (showHitbox)
+        DrawLine(leftX, topY, leftX, botY, RED);
+    
+    int tileX = leftX / map->tileSize;
+
+    for (int ty = topY / map->tileSize; ty <= botY / map->tileSize; ty++) {
+        if (map->map[ty][tileX] == '#' && direction == 0)
+            return true;
+    }
+    return false;
+}
+
+
+bool Player::isOnWall(Map* map)
+{
+    return isTouchingLeftWall(map) || isTouchingRightWall(map);
+}
 
 bool Player::isOnGround(Map *map)
 {
-    int feetY = (int)(posY + 72) / map->tileSize;
-    int leftX  = (int)posX / map->tileSize;
-    int rightX = (int)(posX + 55) / map->tileSize;
+    int feetY = (int)(posY + 75);
+    int leftX  = (int)(posX + 5);
+    int rightX = (int)(posX + 50);
 
-    if (map->map[feetY][leftX] == '#')
-        return true;
-    if (map->map[feetY][rightX] == '#')
-        return true;
+    if (showHitbox)
+        DrawLine(leftX, feetY, rightX, feetY, GREEN);
 
+    int tileY = feetY / map->tileSize;
+    int tileL = leftX / map->tileSize;
+    int tileR = rightX / map->tileSize;
+
+    if (tileY >= 0 && tileY < map->height) {
+        if (tileL >= 0 && tileL < map->width && map->map[tileY][tileL] == '#')
+            return true;
+        if (tileR >= 0 && tileR < map->width && map->map[tileY][tileR] == '#')
+            return true;
+    }
     return false;
 }
+
 
 void Player::checkCollision(Map *map, int oldX, int oldY)
 {
     if (checkCollisionAt(map, posX, oldY)) {
         posX = oldX;
-        dashMomentum = 0;
         if (isDashing) {
             isDashing = false;
             speedX = 0;
         }
     }
 
-    // Toujours appliquer la gravité (sauf si on vient de dasher)
     speedY += gravity;
     posY += speedY;
 
@@ -105,38 +169,40 @@ void Player::checkCollision(Map *map, int oldX, int oldY)
     } else {
         isTouchingGround = false;
     }
-    
-    if (posY >= W_HEIGHT - 172) {
-        posY = W_HEIGHT - 172;
-        speedY = 0;
-        isTouchingGround = true;
-        if (!isDashing)
-            nbDash = 1;
+}
+
+void Player::checkWallGrab(Map *map)
+{
+    if (isOnWall(map))
+    {
+        if (IsKeyDown(KEY_SPACE))
+        {
+            if (IsKeyDown(KEY_UP))
+                speedY = -3;
+            else if (IsKeyDown(KEY_DOWN))
+                speedY = 3;
+            else
+                speedY = 0;
+            isOnAWall = 1;
+        }
+        else
+            isOnAWall = 0;
     }
+    else
+        isOnAWall = 0;
 }
 
 void Player::Update(Map *map)
 {
     float oldX = posX;
     float oldY = posY;
-    
     HandleDash();
     HandleMovement();
     checkCollision(map, oldX, oldY);
+    checkWallGrab(map);
 
-    // Décrémenter les timers SEULEMENT AU SOL
-    if (!isDashing && isTouchingGround) {
-        if (momentumTimer > 0) {
-            momentumTimer--;
-        }
-        if (momentumDuration > 0) {
-            momentumDuration--;
-            if (momentumDuration <= 0) {
-                dashMomentum = 0;
-                momentumTimer = 0;
-            }
-        }
-    }
+    if (IsKeyPressed(KEY_H))
+        showHitbox = (showHitbox == 0) ? 1 : 0;
 
     frameTimer += GetFrameTime();
     if (frameTimer >= frameTime) {
@@ -144,9 +210,9 @@ void Player::Update(Map *map)
         if (currentFrame >= frameCount) currentFrame = 0;
         frameTimer = 0;
     }
-    
+    frameCounter = (frameCounter + 1) % 1000000;
     if (isOnGround(map))
-        isTouchingGround = 1;
+        isTouchingGround = true;
 }
 
 void Player::Jump()
@@ -160,18 +226,15 @@ void Player::Jump()
         }
     }
 }
+
 void Player::Dash()
 {
     if (isDashing || nbDash == 0)
         return;
+        
     isDashing = true;
     dashTimer = dashDuration;
     speedX = (direction == 1 ? dashSpeed : -dashSpeed);
-    dashMomentum = 0;
-    
-    momentumTimer = 40;  // CHANGÉ : commence à 40
-    momentumDuration = 40;
-    
     speedY = 0;
     nbDash = 0;
 }

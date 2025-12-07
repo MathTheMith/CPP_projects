@@ -1,73 +1,70 @@
 #include "../includes/player.hpp"
 #include "raylib.h"
 
-void Player::HandleMovement()
+void Player::priorityInput()
 {
-    if(IsKeyPressed(KEY_UP)) 
-        Jump();
-    if(IsKeyPressed(KEY_LEFT_SHIFT)) 
-        Dash();
-    
-    if (isDashing) return;
+    bool left  = IsKeyDown(KEY_LEFT);
+    bool right = IsKeyDown(KEY_RIGHT);
 
-    if (!isTouchingGround && momentumDuration > 0 && dashMomentum != 0) {
-        float momentumMultiplier = (float)momentumTimer / 40.0f;
-        if (momentumMultiplier < 0) momentumMultiplier = 0;
-        
-        posX += dashMomentum * momentumMultiplier;
-    }
-
-    if ((IsKeyUp(KEY_RIGHT) && IsKeyUp(KEY_LEFT)) ||
-        (IsKeyDown(KEY_RIGHT) && IsKeyDown(KEY_LEFT)))
+    if (!left && !right)
     {
-        if (isTouchingGround) {
-            isMoving = false;
-        }
+        isMoving = false;
         return;
     }
-
-    if (IsKeyDown(KEY_RIGHT)) {
+    if (lastInput == 1 && right)
+    {
         posX += 5;
-        if (isDashing) posX -= 10;
         direction = 1;
         isMoving = true;
     }
-    else if (IsKeyDown(KEY_LEFT)) {
+    else if (lastInput == 0 && left)
+    {
         posX -= 5;
         direction = 0;
         isMoving = true;
     }
+    else if (right)
+    {
+        posX += 5;
+        direction = 1;
+        isMoving = true;
+    }
+    else if (left)
+    {
+        posX -= 5;
+        direction = 0;
+        isMoving = true;
+    }
+    else
+        isMoving = false;
 }
+
+void Player::HandleMovement()
+{
+    if (IsKeyPressed(KEY_UP)) Jump();
+    if (IsKeyPressed(KEY_LEFT_SHIFT)) Dash();
+    if (isDashing) return;
+
+    if (IsKeyPressed(KEY_RIGHT)) lastInput = 1;
+    if (IsKeyPressed(KEY_LEFT))  lastInput = 0;
+
+    priorityInput();
+
+    if (IsKeyDown(KEY_DOWN) && !isTouchingGround)
+        speedY++;
+}
+
+
 void Player::HandleDash()
 {
     if (isDashing) {
-        float targetMomentum = dashSpeed * (direction == 1 ? 1 : -1);
-        float accel = 2.5f;
-        
-        if (direction == 1 && dashMomentum < targetMomentum) {
-            dashMomentum += accel;
-            if (dashMomentum > targetMomentum) dashMomentum = targetMomentum;
-        } else if (direction == 0 && dashMomentum > targetMomentum) {
-            dashMomentum -= accel;
-            if (dashMomentum < targetMomentum) dashMomentum = targetMomentum;
-        }
-        
-        posX += dashMomentum;
+        posX += speedX;
         speedY = 0;
-        
-        if (momentumTimer > 0) {
-            momentumTimer--;
-        }
-        momentumDuration--;
         
         dashTimer--;
         if (dashTimer <= 0) {
             isDashing = false;
+            speedX = 0;
         }
     }
-}
-
-void Player::HandleGravity()
-{
-    // Non utilisée
 }

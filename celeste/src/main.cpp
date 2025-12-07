@@ -20,10 +20,7 @@ int main(void)
         madeline->Update(map);
         map->Draw();
         madeline->Draw();
-
-        DrawRectangle(0, W_HEIGHT - 100, W_WIDTH, 100, GRAY);
-
-
+        DrawText("For debug : H", 50, 20, 20, WHITE);
         EndDrawing();
     }
 
