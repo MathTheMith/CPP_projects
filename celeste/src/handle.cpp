@@ -41,7 +41,8 @@ void Player::priorityInput()
 
 void Player::HandleMovement()
 {
-    if (IsKeyPressed(KEY_UP)) Jump();
+    if (IsKeyPressed(KEY_UP))
+        if (IsKeyDown(KEY_UP)) Jump();
     if (IsKeyPressed(KEY_LEFT_SHIFT)) Dash();
     if (isDashing) return;
 

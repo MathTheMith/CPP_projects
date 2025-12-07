@@ -17,6 +17,12 @@ private:
     float gravity;
     float jumpForce;
 
+    // Variables pour le saut variable
+    bool isHoldingJump;
+    int jumpHoldTimer;
+    int maxJumpHoldTime;
+    float jumpHoldForce;
+
     bool isDashing;
     int dashTimer;
     int dashDuration;
@@ -56,6 +62,7 @@ public:
     int lastInput = -1;
     void Update(Map *map);
     void Jump();
+    void HandleJumpHold();
     void Dash();
     void Draw();
     void HandleDash();

@@ -5,8 +5,12 @@ Player::Player()
     : direction(1),
       speedX(0),
       speedY(0),
-      gravity(0.3f),
+      gravity(0.8f),
       jumpForce(-8),
+      isHoldingJump(false),
+      jumpHoldTimer(0),
+      maxJumpHoldTime(10),
+      jumpHoldForce(-0.8f),
       isDashing(false),
       dashTimer(0),
       dashDuration(10),
@@ -71,6 +75,7 @@ bool Player::checkCollisionAt(Map *map, float x, float y)
     }
     return false;
 }
+
 bool Player::isTouchingRightWall(Map* map)
 {
     int w = 60;
@@ -92,7 +97,6 @@ bool Player::isTouchingRightWall(Map* map)
     return false;
 }
 
-
 bool Player::isTouchingLeftWall(Map* map)
 {
     int h = 60;
@@ -111,7 +115,6 @@ bool Player::isTouchingLeftWall(Map* map)
     }
     return false;
 }
-
 
 bool Player::isOnWall(Map* map)
 {
@@ -140,7 +143,6 @@ bool Player::isOnGround(Map *map)
     return false;
 }
 
-
 void Player::checkCollision(Map *map, int oldX, int oldY)
 {
     if (checkCollisionAt(map, posX, oldY)) {
@@ -165,6 +167,7 @@ void Player::checkCollision(Map *map, int oldX, int oldY)
         else if (speedY < 0) {
             posY = oldY;
             speedY = 0;
+            isHoldingJump = false;
         }
     } else {
         isTouchingGround = false;
@@ -192,14 +195,33 @@ void Player::checkWallGrab(Map *map)
         isOnAWall = 0;
 }
 
+void Player::HandleJumpHold()
+{
+    if (IsKeyDown(KEY_UP) && isHoldingJump && jumpHoldTimer < maxJumpHoldTime && speedY < 0)
+    {
+        speedY += jumpHoldForce;
+        jumpHoldTimer++;
+    }
+    
+    if (IsKeyReleased(KEY_UP) || jumpHoldTimer >= maxJumpHoldTime || speedY >= 0)
+    {
+        isHoldingJump = false;
+    }
+}
+
 void Player::Update(Map *map)
 {
     float oldX = posX;
     float oldY = posY;
     HandleDash();
     HandleMovement();
+    HandleJumpHold();
     checkCollision(map, oldX, oldY);
     checkWallGrab(map);
+    if (isOnAWall && isTouchingGround && direction != 1)
+        {posY -= 30;
+            posX-=5;
+        isTouchingGround = 0;}
 
     if (IsKeyPressed(KEY_H))
         showHitbox = (showHitbox == 0) ? 1 : 0;
@@ -220,6 +242,8 @@ void Player::Jump()
     if (isTouchingGround) {
         speedY = jumpForce;
         isTouchingGround = false;
+        isHoldingJump = true;
+        jumpHoldTimer = 0;
         
         if (isDashing) {
             isDashing = false;
