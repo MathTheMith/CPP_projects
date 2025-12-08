@@ -12,7 +12,8 @@ SRC      = src/main.cpp \
 		   src/animation.cpp \
            src/player.cpp \
 		   src/map.cpp \
-		   src/handle.cpp
+		   src/handle.cpp \
+		   src/camera.cpp
 
 OBJ      = $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
@@ -59,7 +60,7 @@ fclean: clean
 	@echo "🧹 Removing Raylib..."
 	@rm -rf $(RAYLIB_DIR)
 
-re: fclean all
+re: clean all
 
 # --- HELP -------------------------------------------------------------
 

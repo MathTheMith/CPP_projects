@@ -5,8 +5,17 @@
 #include <iostream>
 #include "../includes/map.hpp"
 
-#define W_WIDTH 1920
-#define W_HEIGHT 1080
+struct CameraState {
+    bool isTransitioning;
+    float timer;
+    float duration;
+    float startX;
+    float targetX;
+    float threshold;
+    float currentX;
+    float currentY;
+};
+
 
 class Player {
 private:
@@ -17,7 +26,6 @@ private:
     float gravity;
     float jumpForce;
 
-    // Variables pour le saut variable
     bool isHoldingJump;
     int jumpHoldTimer;
     int maxJumpHoldTime;
@@ -55,6 +63,8 @@ public:
     Player();
     ~Player();
 
+    CameraState cameraState;
+    
     int posX;
     int posY;
     int frameCounter = 0;
@@ -73,8 +83,12 @@ public:
     void checkWallGrab(Map *map);
     bool isOnWall(Map *map);
     void priorityInput();
+    Vector2 getPosition() const;
     bool isTouchingRightWall(Map* map);
     bool isTouchingLeftWall(Map* map);
+    void InitCamera(float threshold);
+    void UpdateCamera(Camera2D &camera);
+    bool IsCameraTransitioning();
 
 };
 
