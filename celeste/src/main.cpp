@@ -52,12 +52,12 @@ int main(void)
 
     while (!WindowShouldClose())
     {
-        madeline->Update(map);
-        madeline->UpdateCamera(camera);
-
+        
         BeginDrawing();
         ClearBackground(BLACK);
-
+        madeline->Update(map);
+        madeline->UpdateCamera(camera);
+        
         BeginMode2D(camera);
         map->Draw();  
         madeline->Draw();

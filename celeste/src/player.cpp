@@ -1,6 +1,6 @@
 #include "../includes/player.hpp"
 #include "raylib.h"
-#include <cmath>
+
 Player::Player()
     : direction(1),
       speedX(0),
@@ -50,20 +50,16 @@ Player::~Player() {
 
 bool Player::checkCollisionAt(Map *map, float x, float y)
 {
-    int tileSize = map->tileSize;
-    float scale = tileSize / 32.0f;
-    
-    int w = 45 * scale;
-    int h = 72 * scale;
-    int offsetX = 10 * scale;
+    int w = 45;
+    int h = 72;
 
-    int minTileX = (int)(x + offsetX) / tileSize;
-    int maxTileX = (int)(x + w) / tileSize;
-    int minTileY = (int)y / tileSize;
-    int maxTileY = (int)(y + h) / tileSize;
+    int minTileX = (int)(x + 10) / map->tileSize;
+    int maxTileX = (int)(x + w) / map->tileSize;
+    int minTileY = (int)y / map->tileSize;
+    int maxTileY = (int)(y + h) / map->tileSize;
 
     if (showHitbox)
-        DrawRectangle((int)(x + 5 * scale), (int)y, w, h, GRAY);
+        DrawRectangle((int)(x + 5), (int)y, w, h, GRAY);
 
     for (int ty = minTileY; ty <= maxTileY; ty++) {
         for (int tx = minTileX; tx <= maxTileX; tx++) {
@@ -82,23 +78,19 @@ bool Player::checkCollisionAt(Map *map, float x, float y)
 
 bool Player::isTouchingRightWall(Map* map)
 {
-    int tileSize = map->tileSize;
-    float scale = tileSize / 32.0f;
-    
-    int w = 60 * scale;
-    int h = 60 * scale;
-    int offsetY = 25 * scale;
+    int w = 60;
+    int h = 60;
 
     int rightX = (int)(posX + w);
-    int topY   = (int)(posY + offsetY);
+    int topY   = (int)(posY + 25);
     int botY   = (int)(posY + h - 1);
 
     if (showHitbox)
         DrawLine(rightX, topY, rightX, botY, BLUE);
 
-    int tileX = rightX / tileSize;
+    int tileX = rightX / map->tileSize;
 
-    for (int ty = topY / tileSize; ty <= botY / tileSize; ty++) {
+    for (int ty = topY / map->tileSize; ty <= botY / map->tileSize; ty++) {
         if (map->map[ty][tileX] == '#' && direction == 1)
             return true;
     }
@@ -107,23 +99,17 @@ bool Player::isTouchingRightWall(Map* map)
 
 bool Player::isTouchingLeftWall(Map* map)
 {
-    int tileSize = map->tileSize;
-    float scale = tileSize / 32.0f;
-    
-    int h = 60 * scale;
-    int offsetX = 10 * scale;
-    int offsetY = 25 * scale;
-    
-    int leftX = (int)(posX - offsetX);
-    int topY  = (int)(posY + offsetY);
+    int h = 60;
+    int leftX = (int)(posX - 10);
+    int topY  = (int)(posY + 25);
     int botY  = (int)(posY + h + 1);
 
     if (showHitbox)
         DrawLine(leftX, topY, leftX, botY, RED);
     
-    int tileX = leftX / tileSize;
+    int tileX = leftX / map->tileSize;
 
-    for (int ty = topY / tileSize; ty <= botY / tileSize; ty++) {
+    for (int ty = topY / map->tileSize; ty <= botY / map->tileSize; ty++) {
         if (map->map[ty][tileX] == '#' && direction == 0)
             return true;
     }
@@ -137,19 +123,16 @@ bool Player::isOnWall(Map* map)
 
 bool Player::isOnGround(Map *map)
 {
-    int tileSize = map->tileSize;
-    float scale = tileSize / 32.0f;
-    
-    int feetY = (int)(posY + 75 * scale);
-    int leftX  = (int)(posX + 5 * scale);
-    int rightX = (int)(posX + 50 * scale);
+    int feetY = (int)(posY + 75);
+    int leftX  = (int)(posX + 5);
+    int rightX = (int)(posX + 50);
 
     if (showHitbox)
         DrawLine(leftX, feetY, rightX, feetY, GREEN);
 
-    int tileY = feetY / tileSize;
-    int tileL = leftX / tileSize;
-    int tileR = rightX / tileSize;
+    int tileY = feetY / map->tileSize;
+    int tileL = leftX / map->tileSize;
+    int tileR = rightX / map->tileSize;
 
     if (tileY >= 0 && tileY < map->height) {
         if (tileL >= 0 && tileL < map->width && map->map[tileY][tileL] == '#')
@@ -226,11 +209,15 @@ void Player::HandleJumpHold()
     }
 }
 
+Vector2 Player::getPosition() const
+{
+    return { (float)posX, (float)posY };
+}
+
 void Player::Update(Map *map)
 {
     if (cameraState.isTransitioning)
         return;
-        
     float oldX = posX;
     float oldY = posY;
     HandleDash();
@@ -238,16 +225,10 @@ void Player::Update(Map *map)
     HandleJumpHold();
     checkCollision(map, oldX, oldY);
     checkWallGrab(map);
-    
-    float scale = map->tileSize / 32.0f;
-    
     if (isOnAWall && isTouchingGround && direction != 1)
-    {
-        posY -= 30 * scale;
-        posX -= 5 * scale;
-        isTouchingGround = 0;
-    }
-
+        {posY -= 30;
+            posX-=5;
+        isTouchingGround = 0;}
     if (IsKeyPressed(KEY_H))
         showHitbox = (showHitbox == 0) ? 1 : 0;
 
