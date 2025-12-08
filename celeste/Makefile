@@ -26,7 +26,7 @@ $(OBJ_DIR)/%.o: %.cpp
 
 $(TARGET): $(OBJ)
 	@echo "🎮 Linking $(TARGET)..."
-	@$(CXX) $(OBJ) $(LDFLAGS) -o $(TARGET)
+	@$(CXX) $(OBJ) -o $(TARGET) raylib/src/libraylib.a -lm -ldl -lpthread -lrt -lX11
 	@echo "✅ Build complete!"
 
 raylib:
