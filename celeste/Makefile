@@ -1,8 +1,6 @@
-# --- CONFIGURATION ----------------------------------------------------
-
 CXX      = g++
 CXXFLAGS = -Wall -Wextra -std=c++17 -Iraylib/src -D_DEFAULT_SOURCE
-LDFLAGS  = -Lraylib/src -lraylib -lm -ldl -lpthread -lGL -lrt -lX11
+LDFLAGS  = -Lraylib/src -lraylib -lm -ldl -lpthread -lrt -lX11
 
 SRC_DIR  = .
 OBJ_DIR  = obj
@@ -19,11 +17,8 @@ OBJ      = $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
 TARGET   = Celeste
 
-# --- RULES ------------------------------------------------------------
-
 all: raylib $(TARGET)
 
-# Compilation des .o dans le dossier obj/
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	@echo "🔨 Compiling $<..."
@@ -31,10 +26,8 @@ $(OBJ_DIR)/%.o: %.cpp
 
 $(TARGET): $(OBJ)
 	@echo "🎮 Linking $(TARGET)..."
-	@$(CXX) $(OBJ) -o $(TARGET) $(LDFLAGS)
+	@$(CXX) $(OBJ) $(LDFLAGS) -o $(TARGET)
 	@echo "✅ Build complete!"
-
-# --- RAYLIB BUILD -----------------------------------------------------
 
 raylib:
 	@if [ ! -d "$(RAYLIB_DIR)" ]; then \
@@ -49,8 +42,6 @@ raylib:
 		echo "✅ Raylib already built"; \
 	fi
 
-# --- CLEAN ------------------------------------------------------------
-
 clean:
 	@echo "🧹 Cleaning build files..."
 	@rm -rf $(OBJ_DIR)
@@ -61,8 +52,6 @@ fclean: clean
 	@rm -rf $(RAYLIB_DIR)
 
 re: clean all
-
-# --- HELP -------------------------------------------------------------
 
 help:
 	@echo "Makefile for Celeste with embedded Raylib (C++)"
