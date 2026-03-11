@@ -68,7 +68,7 @@ celeste/
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/celeste-clone.git
+git clone https://github.com/MathTheMith/celeste-clone.git
 cd celeste-clone
 
 # Build (Raylib is cloned and compiled automatically)
@@ -129,7 +129,7 @@ Maps are plain `.txt` files:
 
 ## 👤 Author
 
-- **Mathéo Vachon** — *École 42 Lyon* — [@mvachon](https://github.com/YOUR_USERNAME)
+- **Mathéo Vachon** — *École 42 Lyon* — [@mvachon](https://github.com/MathTheMith)
 
 ---
 
